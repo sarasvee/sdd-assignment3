@@ -5,12 +5,12 @@ from DbConnector import DbConnector
 class ExampleProgram:
 
     def __init__(self):
-        self.connection = DbConnector()
+        self.connection = DbConnector(DATABASE="my_db", HOST="localhost", USER="test_user", PASSWORD="test_password")
         self.client = self.connection.client
         self.db = self.connection.db
 
     def create_coll(self, collection_name):
-        collection = self.db.create_collection(collection_name)    
+        collection = self.db.create_collection(collection_name)
         print('Created collection: ', collection)
 
     def insert_documents(self, collection_name):
@@ -53,7 +53,7 @@ class ExampleProgram:
 
         
     def show_coll(self):
-        collections = self.client['test'].list_collection_names()
+        collections = self.client['my_db'].list_collection_names()
         print(collections)
          
 

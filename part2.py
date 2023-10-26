@@ -185,7 +185,10 @@ class Task2:
                         break
                     track_point_1 = track_point_2.copy()
 
-        print(user_and_number_of_invalid_activities_dict)
+        key_value_list = [(key, value) for key, value in user_and_number_of_invalid_activities_dict.items()]
+
+        print(tabulate(key_value_list, headers=["id", "invalid activities"]))
+
     
     def task10(self):
         forbidden_city_lat = 39.916
@@ -251,17 +254,16 @@ class Task2:
 
 if __name__ == "__main__":
     task = Task2()
-    # task.task1()
-    # task.task2()
-    # task.task3()
-    # task.task4()
-    # task.task5()
-    # task.task6a()
-    # task.task6b()
-    # task.task7()
-    # task.task8()
+    task.task1()
+    task.task2()
+    task.task3()
+    task.task4()
+    task.task5()
+    task.task6a()
+    task.task6b()
+    task.task7()
+    task.task8()
 
-    # Task 9  tar litt tid å køyre
-    # task.task9()
-    # task.task10()
+    task.task9()
+    task.task10()
     task.task11()

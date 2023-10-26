@@ -2,6 +2,7 @@ from DataParser import DataParser
 from DbConnector import DbConnector
 from DBWriter import DBWriter
 
+from haversine import haversine
 
 USER="User"
 ACTIVITY="Activity"
@@ -103,8 +104,28 @@ class Task2:
                 max_hour = count
 
         print(max_year)
+    
+    def task7(self):
+        distance_walked=0
+        user_activity_id_list= self.db[USER].find_one({"_id": "112"})["activities"]
+        for activity_id in user_activity_id_list:
+            activity = self.db[ACTIVITY].find_one({"_id": activity_id})
+            if activity["type"] == "walk" and activity["start_time"].year == 2008:
+                trackpoint_id_list = activity["trackpoints"]
 
- 
+                track_point_1 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[0]})
+                # track_point_2 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[1]})
+                for i in range(1, len(trackpoint_id_list)):
+                    track_point_2 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[i]})
+                    distance_walked += haversine((track_point_1["lat"], track_point_1["lon"]), (track_point_2["lat"], track_point_2["lon"]))
+
+                    track_point_1 = track_point_2.copy()
+
+        print(distance_walked)
+
+
+
+        
 if __name__ == "__main__":
     task = Task2()
     # task.task1()
@@ -112,5 +133,6 @@ if __name__ == "__main__":
     # task.task3()
     # task.task4()
     # task.task5()
-    task.task6a()
-    task.task6b()
+    # task.task6a()
+    # task.task6b()
+    task.task7()

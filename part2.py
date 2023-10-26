@@ -250,10 +250,6 @@ class Task2:
 
         print(tabulate(users_and_most_used_transportation_mode, headers=["user id", "type"]))
 
-    def test(self):
-        user_list=self.db[USER].find({})
-        print(len(user_list))
-
                     
 
 if __name__ == "__main__":
@@ -272,4 +268,3 @@ if __name__ == "__main__":
     # task.task9()
     # task.task10()
     # task.task11()
-    task.test()

@@ -2,7 +2,9 @@ from DataParser import DataParser
 from DbConnector import DbConnector
 from DBWriter import DBWriter
 
+import datetime
 from haversine import haversine
+from tabulate import tabulate
 
 USER="User"
 ACTIVITY="Activity"
@@ -114,7 +116,7 @@ class Task2:
                 trackpoint_id_list = activity["trackpoints"]
 
                 track_point_1 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[0]})
-                # track_point_2 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[1]})
+
                 for i in range(1, len(trackpoint_id_list)):
                     track_point_2 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[i]})
                     distance_walked += haversine((track_point_1["lat"], track_point_1["lon"]), (track_point_2["lat"], track_point_2["lon"]))
@@ -123,9 +125,130 @@ class Task2:
 
         print(distance_walked)
 
-
-
+    def task8(self):
+        user_gained_alt_dict = {}
+        user_list = self.db[USER].find({})
         
+        for user in user_list:
+            user_gained_alt_dict[user["_id"]] = 0
+
+            for activity_id in user["activities"]:
+                activity = self.db[ACTIVITY].find_one({"_id": activity_id})
+
+                trackpoint_id_list = activity["trackpoints"]
+
+                start_index = 0
+                end_index = -1
+                
+                track_point_1 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[start_index]})
+                while track_point_1["alt"] == -777:
+                    start_index += 1
+                    track_point_1 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[start_index]})
+
+                track_point_2 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[end_index]})
+
+                while track_point_2["alt"] == -777:
+                    end_index -= 1
+                    track_point_2 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[end_index]})
+
+                gained_alt = track_point_2["alt"] - track_point_1["alt"]
+                user_gained_alt_dict[user["_id"]] = user_gained_alt_dict[user["_id"]] + gained_alt
+        
+        key_value_list = [(key, value) for key, value in user_gained_alt_dict.items()]
+        key_value_list.sort(key=lambda x: x[1], reverse=True)
+
+        key_value_list= key_value_list[:20]
+        print(tabulate(key_value_list, headers=["id", "altitude gained"]))
+
+    
+    def task9(self):
+        user_and_number_of_invalid_activities_dict = {}
+        user_list = self.db[USER].find({})
+
+        for user in user_list:
+            for activity_id in user["activities"]:
+                activity = self.db[ACTIVITY].find_one({"_id": activity_id})
+                trackpoint_id_list = activity["trackpoints"]
+
+                track_point_1 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[0]})
+
+                for i in range(1, len(trackpoint_id_list)):
+                    track_point_2 = self.db[TRACKPOINT].find_one({"_id": trackpoint_id_list[i]})
+                    
+                    timedifference = datetime.timedelta(minutes=5)
+                    if track_point_2["date_time"] - track_point_1["date_time"] > timedifference:
+                        if user["_id"] in user_and_number_of_invalid_activities_dict.keys():
+                            user_and_number_of_invalid_activities_dict[user["_id"]] = user_and_number_of_invalid_activities_dict[user["_id"]] + 1 
+                        else:
+                            user_and_number_of_invalid_activities_dict[user["_id"]] = 1
+
+                        break
+                    track_point_1 = track_point_2.copy()
+
+        print(user_and_number_of_invalid_activities_dict)
+    
+    def task10(self):
+        forbidden_city_lat = 39.916
+        forbidden_city_lon = 116.397
+
+        user_with_activities_in_forbidden_city = []
+        
+        user_list = self.db[USER].find({})
+        forbidden_city_list = self.db[TRACKPOINT].find({
+            "lat": { "$lte" : forbidden_city_lat + 0.001, "$gte" : forbidden_city_lat - 0.001},
+            "lon": { "$lte" : forbidden_city_lon + 0.001, "$gte" : forbidden_city_lon - 0.001}
+        })
+
+
+        for user in user_list:
+            for activity_id in user["activities"]:
+                if user["_id"] in user_with_activities_in_forbidden_city:
+                    break
+
+                activity = self.db[ACTIVITY].find_one({"_id": activity_id})
+                trackpoint_id_list = activity["trackpoints"]
+
+                
+                for track_point_id in trackpoint_id_list:
+                    
+                    for track_point in forbidden_city_list:
+                        if track_point["_id"] == track_point_id:
+                            user_with_activities_in_forbidden_city.append(user["_id"])
+                            break
+        
+        print(user_with_activities_in_forbidden_city)
+    
+    def task11(self):
+        users_and_most_used_transportation_mode = []
+
+        user_list = self.db[USER].find({})
+
+        for user in user_list:
+            number_per_transportationmode = {}
+
+            for activity_id in user["activities"]:
+                activity = self.db[ACTIVITY].find_one({"_id": activity_id})
+                if activity["type"] in number_per_transportationmode.keys():
+                    number_per_transportationmode[activity["type"]] = number_per_transportationmode[activity["type"]] + 1
+                else:
+                    number_per_transportationmode[activity["type"]] = 1
+
+            max_count = 0
+            max_type = None
+
+            for transportation_mode, count in number_per_transportationmode.items():
+                if count > max_count:
+                    max_count = count 
+                    max_type = transportation_mode
+            
+            users_and_most_used_transportation_mode.append((user["_id"], max_type))
+
+        users_and_most_used_transportation_mode.sort(key=lambda x : x[0])
+
+        print(tabulate(users_and_most_used_transportation_mode, headers=["user id", "type"]))
+
+                    
+
 if __name__ == "__main__":
     task = Task2()
     # task.task1()
@@ -135,4 +258,10 @@ if __name__ == "__main__":
     # task.task5()
     # task.task6a()
     # task.task6b()
-    task.task7()
+    # task.task7()
+    # task.task8()
+
+    # Task 9  tar litt tid å køyre
+    # task.task9()
+    # task.task10()
+    task.task11()

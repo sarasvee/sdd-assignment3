@@ -52,10 +52,65 @@ class Task2:
         print(taxi_users)
 
 
+    def task5(self):
+        acitivity_list=self.db[ACTIVITY].find({})
+        activity_type_dict = {}
+        for activity in acitivity_list:
+            if activity["type"] in activity_type_dict.keys():
+                activity_type_dict[activity["type"]] = activity_type_dict[activity["type"]] + 1
+            else:
+                activity_type_dict[activity["type"]] = 1
+        
+        print(activity_type_dict)
 
+    def task6a(self):
+        year_activity_dict = {}
+        activity_list=self.db[ACTIVITY].find({})
+        for activity in activity_list:
+            start_year = activity["start_time"].year
+            if start_year in year_activity_dict.keys():
+                year_activity_dict[start_year] = year_activity_dict[start_year]+1
+            else:
+                year_activity_dict[start_year] = 1
+
+        max_count = 0
+        max_year = None
+        for year, count in year_activity_dict.items():
+            if count > max_count:
+                max_year=year
+                max_count=count
+        
+        print(max_year)
+
+
+    def task6b(self):
+        year_hour_dict={}
+        activity_list = self.db[ACTIVITY].find({})
+        for activity in activity_list:
+            start_year = activity["start_time"].year
+            hour_in_activity = activity["end_time"] - activity["start_time"]
+            hour_in_activity = hour_in_activity.seconds / 3600
+            if start_year in year_hour_dict.keys():
+                year_hour_dict[start_year] = year_hour_dict[start_year] + hour_in_activity
+            else:
+                year_hour_dict[start_year] = hour_in_activity
+
+        max_hour = 0
+        max_year = None
+        for year, count in year_hour_dict.items():
+            if count > max_hour:
+                max_year = year
+                max_hour = count
+
+        print(max_year)
+
+ 
 if __name__ == "__main__":
     task = Task2()
     # task.task1()
     # task.task2()
     # task.task3()
     # task.task4()
+    # task.task5()
+    task.task6a()
+    task.task6b()

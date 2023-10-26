@@ -185,7 +185,10 @@ class Task2:
                         break
                     track_point_1 = track_point_2.copy()
 
-        print(user_and_number_of_invalid_activities_dict)
+        key_value_list = [(key, value) for key, value in user_and_number_of_invalid_activities_dict.items()]
+
+        print(tabulate(key_value_list, headers=["id", "invalid activities"]))
+
     
     def task10(self):
         forbidden_city_lat = 39.916
@@ -247,6 +250,10 @@ class Task2:
 
         print(tabulate(users_and_most_used_transportation_mode, headers=["user id", "type"]))
 
+    def test(self):
+        user_list=self.db[USER].find({})
+        print(len(user_list))
+
                     
 
 if __name__ == "__main__":
@@ -264,4 +271,5 @@ if __name__ == "__main__":
     # Task 9  tar litt tid å køyre
     # task.task9()
     # task.task10()
-    task.task11()
+    # task.task11()
+    task.test()
